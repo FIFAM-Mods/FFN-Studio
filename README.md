@@ -12,6 +12,12 @@ The tool is able to:
 
 The font import was successfully tested in Total Club Manager 2005.
 
+<img width="642" height="531" alt="FFN Studio 2" src="https://github.com/user-attachments/assets/5683649c-00ed-48b6-9707-8a4c1358b069" />
+<br><br>
+<img width="512" height="256" alt="Myriad18b" src="https://github.com/user-attachments/assets/d6ab6ca3-57cf-4226-b5c4-9bdffaed73db" />
+<br><br>
+<img width="642" alt="tcm2005_font_test" src="https://github.com/user-attachments/assets/a2d14ce6-797d-4fd4-997a-5c9b9177c176" />
+<br><br>
 The support for other platforms is implemented, but was never tested.
 
 ## Requirements
