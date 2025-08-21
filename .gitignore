@@ -1,0 +1,6 @@
+.vs
+.obj
+.lib
+output
+build
+*.spec
