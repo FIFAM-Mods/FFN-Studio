@@ -44,7 +44,6 @@ void DumpToHex(const wchar_t *filename, unsigned char *data, size_t dataSize) {
 }
 
 HMODULE gimex;
-char faceName[1024] = {};
 bool Windows1251 = false;
 
 UInt Gimex(UInt addr) {
@@ -377,16 +376,12 @@ int WINAPI TTF_Open(void **gxptr, void *g, const char *pathname, bool framecount
     wchar_t *ttf_fontname = (wchar_t *)Gimex(0x1FB190);
     wchar_t *ttf_pathname = (wchar_t *)Gimex(0x1FB250);
     //wcscpy(ttf_pathname, pathname);
-    if (faceName[0])
-        wcscpy(ttf_fontname, Utils::AtoW(faceName).c_str());
-    else {
-        auto fonts = GetTtfFonts(Utils::AtoW(pathname).c_str());
-        if (!fonts.empty())
-            wcscpy(ttf_fontname, fonts[0].c_str());
-        else
-            return 0;
-        //::Error(L"Found fonts in %s:\n%s", Utils::AtoW(pathname).c_str(), Utils::Join(fonts, L", ").c_str());
-    }
+    auto fonts = GetTtfFonts(Utils::AtoW(pathname).c_str());
+    if (!fonts.empty())
+        wcscpy(ttf_fontname, fonts[0].c_str());
+    else
+        return 0;
+    //::Error(L"Found fonts in %s:\n%s", Utils::AtoW(pathname).c_str(), Utils::Join(fonts, L", ").c_str());
     return CallMethodAndReturnDynGlobal<int>(Gimex(0xD0930), 0, gxptr, g, pathname, framecountflag);
 }
 
@@ -405,26 +400,6 @@ int WINAPI TTF_Info(void *gx, int framenum) {
 //    
 //}
 
-int CheckFontOption(char const *str, char const *substr, size_t size) {
-    if (!_strnicmp(str, "font", 4))
-        return 0;
-    return _strnicmp(str, substr, size);
-}
-
-char const *METHOD GetFontOption(char *out, char const *in, bool strip_outer, bool keep_ops) {
-    char const *pArgName = in - 9;
-    if (!_strnicmp(pArgName, "font", 4)) {
-        auto result = CallFastcallAndReturnDynGlobal<char *>(GX(0x4D4ED0), faceName, pArgName + 4);
-        auto len = strlen(faceName);
-        for (size_t i = 0; i < len; i++) {
-            if (faceName[i] == '*')
-                faceName[i] = ' ';
-        }
-        return result;
-    }
-    return CallFastcallAndReturnDynGlobal<char *>(GX(0x4B2960), out, in);
-}
-
 int CheckWindows1251Option(char const *str, char const *substr, size_t size) {
     if (!_strnicmp(str, "windows1251", 11))
         return 0;
@@ -435,12 +410,13 @@ char const *METHOD GetWindows1251Option(char *out, char const *in, bool strip_ou
     char const *pArgName = in - 5;
     if (!_strnicmp(pArgName, "windows1251", 11)) {
         char OPTwindows1251[256];
-        auto result = CallFastcallAndReturnDynGlobal<char *>(GX(0x4B2960), OPTwindows1251, pArgName + 11);
+        OPTwindows1251[0] = '\0';
+        auto result = CallFastcallAndReturnDynGlobal<char *>(GX(0x4D72C0), OPTwindows1251, pArgName + 11, true, false);
         if (strlen(OPTwindows1251) == 1)
-            Windows1251 = OPTwindows1251[0] == 1;
+            Windows1251 = OPTwindows1251[0] == '1';
         return result;
     }
-    return CallFastcallAndReturnDynGlobal<char *>(GX(0x4B2960), out, in);
+    return CallFastcallAndReturnDynGlobal<char *>(GX(0x4D72C0), out, in, true, false);
 }
 
 void FontPrintCodeNameSmall(char *out, char const *format, unsigned int code, int, int) {
@@ -501,8 +477,6 @@ void loader::InstallPatches() {
     patch::SetPointer(Gimex(0x1F30FC), TTF_Open);
     patch::SetPointer(Gimex(0x1F3100), TTF_Info);
     //patch::RedirectCall(Gimex(0xD0A39), TTF_pathtofontname);
-    patch::RedirectCall(GX(0x4C9FF6), CheckFontOption);
-    patch::RedirectCall(GX(0x4CA011), GetFontOption);
     patch::RedirectCall(GX(0x4CDC0A), CheckWindows1251Option);
     patch::RedirectCall(GX(0x4CDC25), GetWindows1251Option);
     patch::RedirectCall(Gimex(0xD0C3A), TTF_frameindex);

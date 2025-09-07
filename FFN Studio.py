@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QFont, QIcon
 
 
-APP_TITLE = "FFN Studio (0.1 first test)"
+APP_TITLE = "FFN Studio (0.2)"
 
 
 def app_root_dir() -> str:
@@ -229,13 +229,6 @@ class TtfToFfnWindow(QtWidgets.QDialog):
         fgL.addWidget(smallCapitalsLabel, 1, 2)
         fgL.addWidget(self.smallCapsSpin, 1, 3)
 
-        # Row 3: Typeface
-        self.typefaceEdit = QtWidgets.QLineEdit()
-        typefaceLabel = QtWidgets.QLabel("Typeface")
-        typefaceLabel.setToolTip("Specify font face")
-        fgL.addWidget(typefaceLabel, 2, 0)
-        fgL.addWidget(self.typefaceEdit, 2, 1, 1, 3)
-
         main.addWidget(fontGroup)
 
         # --- Outline effect group ---
@@ -431,12 +424,6 @@ class TtfToFfnWindow(QtWidgets.QDialog):
         smallcaps = self.smallCapsSpin.value()
         if abs(smallcaps - 0.0) > 1e-9:
             opts.append(f"-smallcaps{self.clean_float(smallcaps)}")
-
-        # Typeface
-        tf = self.typefaceEdit.text().strip()
-        if tf:
-            tf_fmt = tf.replace(" ", "*")
-            opts.append(f"-font{tf_fmt}")
 
         # Outline effect
         ox = self.outlineXSpin.value()
